@@ -3,13 +3,13 @@ requires = ["setuptools", "wheel", "setuptools_scm"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
-write_to = "src/quick_project/version.py"
+write_to = "src/PLACEHOLDER_NAME/version.py"
 version_scheme = "release-branch-semver"
 
 [project]
-name = "quick_project"
+name = "PLACEHOLDER_NAME"
 description = "A CLI tool to create empty Python projects"
-authors = [{name = "James Berkheimer", email = "james.berkheimer@gmail.com"}]
+authors = [{name = "<USERNAME>", email = "<USERNAME@example>"}]
 license = {text = "MIT"}
 dynamic = ["version"]
 classifiers = [
@@ -18,10 +18,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 requires-python = ">=3.9"
-dependencies = [
-    "click",
-    "colorlog",
-]
+dependencies = []
 
 [project.optional-dependencies]
 dev = [
@@ -37,10 +34,10 @@ file = "README.md"
 content-type = "text/markdown"
 
 [project.scripts]
-qp = "quick_project.main:main"
+ADD_CLI_CMD = "PLACEHOLDER_NAME.main:main"
 
 [project.urls]
-homepage = "https://github.com/james-berkheimer/quick_project"
+homepage = "https://example.com"
 
 [tool.setuptools]
 include-package-data = true
