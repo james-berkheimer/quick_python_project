@@ -8,7 +8,7 @@ version_scheme = "release-branch-semver"
 
 [project]
 name = "quick_project"
-version = "0.1.0"
+# version = "0.1.0"
 description = "A CLI tool to create empty Python projects"
 authors = [{name = "James Berkheimer", email = "james.berkheimer@gmail.com"}]
 url = "https://github.com/yourusername/your_project_name"
