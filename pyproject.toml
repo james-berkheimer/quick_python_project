@@ -3,11 +3,11 @@ requires = ["setuptools", "wheel", "setuptools_scm"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
-write_to = "src/quick_project/version.py"
+write_to = "src/quick_python_project/version.py"
 version_scheme = "release-branch-semver"
 
 [project]
-name = "quick_project"
+name = "quick_python_project"
 description = "A CLI tool to create empty Python projects"
 authors = [{name = "James Berkheimer", email = "james.berkheimer@gmail.com"}]
 license = {text = "MIT"}
@@ -37,10 +37,10 @@ file = "README.md"
 content-type = "text/markdown"
 
 [project.scripts]
-qp = "quick_project.main:main"
+qp = "quick_python_project.main:main"
 
 [project.urls]
-homepage = "https://github.com/james-berkheimer/quick_project"
+homepage = "https://github.com/james-berkheimer/quick_python_project"
 
 [tool.setuptools]
 include-package-data = true

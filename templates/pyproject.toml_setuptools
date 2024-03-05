@@ -17,24 +17,18 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-requires-python = ">=3.9"
+requires-python = "PYTHON_VERSION"
 dependencies = []
 
 [project.optional-dependencies]
-dev = [
-    "ruff",
-    "tox",
-    "build",
-    "pytest",
-    "coverage"
-]
+dev = []
 
 [project.readme]
 file = "README.md"
 content-type = "text/markdown"
 
 [project.scripts]
-ADD_CLI_CMD = "PLACEHOLDER_NAME.main:main"
+PLACEHOLDER_CMD = "PLACEHOLDER_NAME.main:main"
 
 [project.urls]
 homepage = "https://example.com"
@@ -48,35 +42,3 @@ license-files = ["LICENSE"]
 exclude = ["tests"]
 namespaces = true
 where = ["src"]
-
-[tool.ruff]
-exclude = [
-    ".bzr",
-    ".cache",
-    ".direnv",
-    ".eggs",
-    "*.egg-info",
-    ".git",
-    ".git-rewrite",
-    ".hg",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    "*.pyc",
-    "__pycache__",
-    ".pytype",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "venv",
-    ".code-workspace"
-]
-ignore = ["F401", "F403"]
-line-length = 100

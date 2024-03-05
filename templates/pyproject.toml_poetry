@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "PLACEHOLDER_NAME"
+version = "0.1.0"
+description = ""
+authors = ["USERNAME <USERNAME@example>>"]
+readme = "README.md"
+packages = [{include = "PLACEHOLDER_NAME"}]
+
+[tool.poetry.dependencies]
+python = "PYTHON_VERSION"
+
+[tool.poetry.group.test.dependencies]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+

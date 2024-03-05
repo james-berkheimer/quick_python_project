@@ -1,0 +1,10 @@
+{
+    "flags": {
+        "project_name": "REQUIRED",
+        "project_path": "Path.home()",
+        "user_name": "Default User",
+        "user_email": "user@example.com",
+        "command_name": "command",
+        "minimum_python_version": "3.6"
+    }
+}
