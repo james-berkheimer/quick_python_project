@@ -1,17 +1,44 @@
 import json
+import logging
+import os
+import stat
 from pathlib import Path
 
 import click
+import colorlog
 
 from . import project_generation
 
+# Set up logging
+handler = colorlog.StreamHandler()
+handler.setFormatter(
+    colorlog.ColoredFormatter("%(log_color)s%(levelname)-8s%(reset)s %(blue)s%(message)s")
+)
+
+logger = colorlog.getLogger(__name__)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+
 
 def get_default_value(key, default):
+    """
+    Get the default value for a given key. If the key is not found in the default values file,
+    the provided default value is returned.
+
+    Parameters:
+    key (str): The key for which to get the default value.
+    default (str): The default value to return if the key is not found in the default values file.
+
+    Returns:
+    str: The default value for the given key.
+    """
     defaults_path = Path.cwd() / "data" / "default_values.json"
-    if defaults_path.exists():
+    if defaults_path.exists() and os.access(defaults_path, os.R_OK):
         with open(defaults_path) as f:
             defaults = json.load(f)
             return defaults.get(key, default)
+    elif defaults_path.exists():
+        logger.warning(f"Defaults file {defaults_path} is not readable")
     return default
 
 
@@ -35,7 +62,7 @@ def get_default_value(key, default):
 )
 @click.option(
     "--command-name",
-    default=get_default_value("command_name", "command"),
+    default=get_default_value("command_name", "cmd"),
     help="The name of the command.",
 )
 @click.option(
@@ -54,45 +81,31 @@ def get_default_value(key, default):
     help="The minimum Python version required for the project.",
 )
 @click.option("--save-defaults", is_flag=True, help="Save the current options as defaults.")
-def create_project(
-    name, path, user_name, user_email, command_name, package_type, save_defaults, min_python_version
+@click.option("-v", "--verbose", is_flag=True, help="Enable verbose logging (show debug logs).")
+def main(
+    name,
+    path,
+    user_name,
+    user_email,
+    command_name,
+    package_type,
+    save_defaults,
+    min_python_version,
+    verbose,
 ):
     """
-    Create a new project with the specified name at the specified path.
-
-    Parameters:
-    ...
-    min_python_version (str): The minimum Python version required for the project.
+    The main entry point for the script.
     """
-    path = Path(path)
-    project_root_path = path / name
+    if verbose:
+        logger.setLevel(logging.DEBUG)
 
-    if save_defaults:
-        defaults_path = Path.cwd() / "data" / "default_values.json"
-        defaults_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(defaults_path, "w") as f:
-            json.dump(
-                {
-                    "path": str(path),
-                    "user_name": user_name,
-                    "user_email": user_email,
-                    "package_type": package_type,
-                    "min_python_version": min_python_version,
-                },
-                f,
-            )
-
-    project_generation.generate_project_files(
+    project_generation.create_project(
         name,
-        project_root_path,
+        path,
         user_name,
         user_email,
         command_name,
         package_type,
+        save_defaults,
         min_python_version,
     )
-    click.echo(f"Created '{name}' project at '{project_root_path}'")
-    click.echo(f"User: '{user_name}' with email '{user_email}'")
-    click.echo(f"Command: '{command_name}'")
-    click.echo(f"Package type: '{package_type}'")
-    click.echo(f"Minimum Python version: '{min_python_version}'")

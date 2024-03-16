@@ -1,7 +1,7 @@
 from pathlib import Path
 from unittest.mock import mock_open, patch
 
-from quick_project import project_generation
+from quick_python_project import main, project_generation
 
 
 @patch("builtins.open", new_callable=mock_open, read_data="PLACEHOLDER_NAME")
@@ -32,3 +32,32 @@ def test_generate_project_files(mock_mkdir, mock_create_file):
 
     mock_mkdir.assert_called()
     assert mock_create_file.call_count == 5
+
+
+@patch("quick_python_project.main.project_generation.generate_project_files")
+@patch("builtins.open", new_callable=mock_open)
+def test_create_project(mock_file, mock_generate_project_files):
+    name = "test_project"
+    path = "test_path"
+    user_name = "test_user"
+    user_email = "test_user@example.com"
+    command_name = "test_command"
+    package_type = "hatchling"
+    save_defaults = True
+    min_python_version = "3.7"
+
+    main.create_project(
+        name,
+        path,
+        user_name,
+        user_email,
+        command_name,
+        package_type,
+        save_defaults,
+        min_python_version,
+    )
+
+    mock_file.assert_called_once_with(Path.cwd() / "data" / "default_values.json", "w")
+    mock_generate_project_files.assert_called_once_with(
+        name, path, user_name, user_email, command_name, package_type, min_python_version
+    )
