@@ -33,9 +33,6 @@ def create_file_from_template(path, template_path, replacements):
     Raises:
     FileNotFoundError: If the template file does not exist.
     """
-    if not Path(template_path).exists():
-        raise FileNotFoundError(f"Template file {template_path} does not exist")
-
     try:
         with open(template_path, "r") as template:
             content = template.read()
@@ -48,6 +45,9 @@ def create_file_from_template(path, template_path, replacements):
         with open(path, "w") as file:
             file.write(content)
         logger.info(f"Created file {path} from template {template_path}")
+    except FileNotFoundError:
+        logger.error(f"Template file {template_path} does not exist")
+        raise
     except Exception as e:
         logger.error(f"Error creating file {path} from template {template_path}: {e}")
         raise

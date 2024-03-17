@@ -74,7 +74,7 @@ def get_default_value(key, default):
 @click.option(
     "--min-python-version",
     type=click.Choice(
-        ["3.0", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11"],
+        ["3.9", "3.10", "3.11"],
         case_sensitive=False,
     ),
     default=get_default_value("min_python_version", "3.9"),
