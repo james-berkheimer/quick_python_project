@@ -54,7 +54,7 @@ def create_file_from_template(path, template_path, replacements):
 
 
 def create_project(
-    name, path, user_name, user_email, command_name, package_type, save_defaults, min_python_version
+    name, path, user_name, user_email, command_name, package_type, save_prefs, min_python_version
 ):
     """
     Create a new project with the specified name at the specified path.
@@ -66,7 +66,7 @@ def create_project(
     user_email (str): The email of the user.
     command_name (str): The name of the command.
     package_type (str): The type of the package.
-    save_defaults (bool): Whether to save the current options as defaults.
+    save_prefs (bool): Whether to save the current options as defaults.
     min_python_version (str): The minimum Python version required for the project.
     """
     logger.info("Creating project...")
@@ -74,46 +74,31 @@ def create_project(
     project_root_path = path / name
 
     if project_root_path.exists():
-        raise FileExistsError(f"Project directory {project_root_path} already exists")
-
-    project_root_path.mkdir(parents=True, exist_ok=True)
-
-    try:
-        if save_defaults:
-            logger.info("Saving defaults...")
-            defaults_path = Path.cwd() / "data" / "default_values.json"
-            defaults_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(defaults_path, "w") as f:
-                json.dump(
-                    {
-                        "path": str(path),
-                        "user_name": user_name,
-                        "user_email": user_email,
-                        "package_type": package_type,
-                        "min_python_version": min_python_version,
-                    },
-                    f,
-                )
-            os.chmod(defaults_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
-
-        generate_project_files(
-            name,
-            project_root_path,
-            user_name,
-            user_email,
-            command_name,
-            package_type,
-            min_python_version,
+        logger.error(
+            f"Project directory {project_root_path} already exists. Please choose a different name or location."
         )
-    except (PermissionError, IOError) as e:
-        logger.error(f"Error: {e}")
-        raise
+    else:
+        project_root_path.mkdir(parents=True, exist_ok=True)
 
-    logger.info(f"Created '{name}' project at '{project_root_path}'")
-    logger.info(f"User: '{user_name}' with email '{user_email}'")
-    logger.info(f"Command: '{command_name}'")
-    logger.info(f"Package type: '{package_type}'")
-    logger.info(f"Minimum Python version: '{min_python_version}'")
+        try:
+            generate_project_files(
+                name,
+                project_root_path,
+                user_name,
+                user_email,
+                command_name,
+                package_type,
+                min_python_version,
+            )
+        except (PermissionError, IOError) as e:
+            logger.error(f"Error: {e}")
+            raise
+
+        logger.info(f"Created '{name}' project at '{project_root_path}'")
+        logger.info(f"User: '{user_name}' with email '{user_email}'")
+        logger.info(f"Command: '{command_name}'")
+        logger.info(f"Package type: '{package_type}'")
+        logger.info(f"Minimum Python version: '{min_python_version}'")
 
 
 def generate_project_files(
