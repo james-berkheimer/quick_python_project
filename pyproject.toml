@@ -81,5 +81,5 @@ exclude = [
     "venv",
     ".code-workspace"
 ]
-ignore = ["F401", "F403"]
+lint.ignore = ["F401", "F403"]
 line-length = 100
