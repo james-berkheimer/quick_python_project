@@ -7,7 +7,7 @@ name: Quick Python Project Publish
 on:
   push:
     branches:
-      - james-verkheimer/publishing_test
+      - james-berkheimer/publishing_test
 
 jobs:
   deploy:
