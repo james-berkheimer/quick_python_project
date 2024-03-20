@@ -14,8 +14,9 @@ from click.testing import CliRunner
 # Add the 'src' directory to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
-
 from quick_python_project.main import create_prefs_file, delete_prefs_file, get_saved_prefs, main
+
+# print(f"Location: {os.path.dirname(main.__file__)}")
 
 
 class TestPrefsFiles(unittest.TestCase):

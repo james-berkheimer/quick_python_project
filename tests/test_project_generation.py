@@ -11,11 +11,14 @@ from unittest.mock import call, mock_open, patch
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
 
+from quick_python_project import project_generation
 from quick_python_project.project_generation import (
     create_file_from_template,
     create_project,
     generate_project_files,
 )
+
+print(f"Location: {os.path.dirname(project_generation.__file__)}")
 
 
 class TestCreateFileFromTemplate(unittest.TestCase):

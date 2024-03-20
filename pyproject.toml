@@ -29,7 +29,8 @@ dev = [
     "tox",
     "build",
     "pytest",
-    "coverage"
+    "coverage",
+    "covdefaults"
 ]
 
 [project.readme]
@@ -37,7 +38,7 @@ file = "README.md"
 content-type = "text/markdown"
 
 [project.scripts]
-qp = "quick_python_project.main:main"
+qpp = "quick_python_project.main:main"
 
 [project.urls]
 homepage = "https://github.com/james-berkheimer/quick_python_project"
