@@ -25,11 +25,13 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "build",
+    "coverage",
+    "covdefaults",
+    "pytest",
     "ruff",
     "tox",
-    "build",
-    "pytest",
-    "coverage"
+    "twine"
 ]
 
 [project.readme]
@@ -37,7 +39,7 @@ file = "README.md"
 content-type = "text/markdown"
 
 [project.scripts]
-qp = "quick_python_project.main:main"
+qpp = "quick_python_project.main:main"
 
 [project.urls]
 homepage = "https://github.com/james-berkheimer/quick_python_project"
@@ -81,5 +83,5 @@ exclude = [
     "venv",
     ".code-workspace"
 ]
-ignore = ["F401", "F403"]
+lint.ignore = ["F401", "F403"]
 line-length = 100
