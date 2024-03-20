@@ -1,8 +1,13 @@
 name: Quick Python Project Publish
 
+# on:
+#   release:
+#     types: [created]
+
 on:
-  release:
-    types: [created]
+  push:
+    branches:
+      - james-verkheimer/publishing_test
 
 jobs:
   deploy:
