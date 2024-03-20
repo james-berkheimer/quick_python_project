@@ -4,6 +4,11 @@ on:
   release:
     types: [created]
 
+# on:
+#   push:
+#     branches:
+#       - james-berkheimer/publishing_test
+
 jobs:
   deploy:
     permissions:

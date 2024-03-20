@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
 write_to = "src/quick_python_project/version.py"
-version_scheme = "release-branch-semver"
+version_scheme = "post-release"
 
 [project]
 name = "quick_python_project"
