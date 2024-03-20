@@ -25,12 +25,13 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "build",
+    "coverage",
+    "covdefaults",
+    "pytest",
     "ruff",
     "tox",
-    "build",
-    "pytest",
-    "coverage",
-    "covdefaults"
+    "twine"
 ]
 
 [project.readme]
