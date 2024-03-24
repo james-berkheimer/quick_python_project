@@ -20,7 +20,22 @@ logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
 
-def create_prefs_file(path, user_name, user_email, package_type, min_python_version):
+CONFIG_FILE_NAME = "user_prefs.json"
+
+PLATFORM = os.name
+
+
+def get_prefs_file_path(os_name=None):
+    os_name = os_name or os.name
+    if os_name == "posix":
+        return Path.home() / ".config" / "config.json"
+    elif os_name == "nt":
+        return Path(os.getenv("APPDATA")) / "quick_python_project" / "config.json"
+    else:
+        raise NotImplementedError(f"OS '{os_name}' not supported")
+
+
+def create_prefs_file(project_path, user_name, user_email, package_type, min_python_version):
     """_summary_
 
     Args:
@@ -32,11 +47,11 @@ def create_prefs_file(path, user_name, user_email, package_type, min_python_vers
     """
     try:
         logger.info("Saving user preferences...")
-        user_prefs_path = Path.cwd() / "data" / "user_prefs.json"
+        user_prefs_path = Path(get_prefs_file_path(PLATFORM))
         user_prefs_path.parent.mkdir(parents=True, exist_ok=True)
 
         user_prefs = {
-            "path": str(path),
+            "project_path": project_path,
             "user_name": user_name,
             "user_email": user_email,
             "package_type": package_type,
@@ -51,8 +66,13 @@ def create_prefs_file(path, user_name, user_email, package_type, min_python_vers
             f.write(user_prefs_str)
 
         os.chmod(user_prefs_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
+
+        logger.info(
+            f"User preferences file created at {user_prefs_path}"
+        )  # Log the path of the created file
     except Exception as e:
         logger.error(f"An error occurred while creating the user preferences file: {e}")
+        raise
 
 
 def delete_prefs_file():
@@ -60,13 +80,20 @@ def delete_prefs_file():
     Deletes the user_prefs.json file if it exists.
     """
     try:
-        if os.path.exists("user_prefs.json"):
-            os.remove("user_prefs.json")
-            logger.info("User preferences file deleted.")
+        user_prefs_path = get_prefs_file_path(PLATFORM)
+        if os.path.exists(user_prefs_path):
+            os.remove(user_prefs_path)
+            logger.info(f"User preferences file {user_prefs_path} deleted.")
         else:
-            logger.info("User preferences file does not exist.")
+            logger.warning(f"User preferences file {user_prefs_path} does not exist.")
     except Exception as e:
-        logger.error(f"An error occurred while deleting the user preferences file: {e}")
+        logger.error(
+            f"An error occurred while deleting the user preferences file {user_prefs_path}: {e}"
+        )
+        raise
+
+
+prefs_file_read = False
 
 
 def get_saved_prefs(key, default_argument):
@@ -81,11 +108,17 @@ def get_saved_prefs(key, default_argument):
     Returns:
     str: The default value for the given key.
     """
-    prefs_path = Path.cwd() / "data" / "user_prefs.json"
+    # Add a global variable to track if the prefs file has been read
+
+    global prefs_file_read
+    prefs_path = get_prefs_file_path(PLATFORM)
     try:
-        if prefs_path.exists() and os.access(prefs_path, os.R_OK):
+        if prefs_path.exists() and prefs_path.is_file():
             with open(prefs_path, "r") as prefs_file:
                 defaults = json.load(prefs_file)
+                if not prefs_file_read:
+                    logger.info(f"Using preferences from {prefs_path}")
+                    prefs_file_read = True
                 return defaults.get(key, default_argument)
         else:
             logger.debug(
@@ -96,38 +129,43 @@ def get_saved_prefs(key, default_argument):
     return default_argument
 
 
-@click.command()
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
 @click.option("-n", "--name", prompt="Project name", help="The name of the project.")
 @click.option(
     "-p",
     "--path",
     prompt="Project path",
-    default=get_saved_prefs("path", str(Path.home() / "code")),
+    default=str(Path.home() / "code"),
     help="The path where the project will be created.",
 )
 @click.option(
     "-un",
     "--user-name",
-    default=get_saved_prefs("user_name", "Default User"),
+    default=None,
     help="The name of the user.",
 )
 @click.option(
     "-ue",
     "--user-email",
-    default=get_saved_prefs("user_email", "user@example.com"),
+    default=None,
     help="The email of the user.",
 )
 @click.option(
     "-cmd",
     "--command",
-    default=get_saved_prefs("command", "cmd"),
+    default=None,
     help="The name of the command.",
 )
 @click.option(
     "-pt",
     "--package-type",
     type=click.Choice(["setuptools", "hatchling", "poetry"], case_sensitive=False),
-    default=get_saved_prefs("package_type", "setuptools"),
+    default=None,
     help="The type of the package.",
 )
 @click.option(
@@ -137,15 +175,12 @@ def get_saved_prefs(key, default_argument):
         ["3.9", "3.10", "3.11"],
         case_sensitive=False,
     ),
-    default=get_saved_prefs("min_python_version", "3.9"),
+    default=None,
     help="The minimum Python version required for the project.",
 )
 @click.option("-sp", "--save-prefs", is_flag=True, help="Save the current options as defaults.")
 @click.option("-v", "--verbose", is_flag=True, help="Enable verbose logging (show debug logs).")
-@click.option(
-    "-dp", "--delete-prefs", is_flag=True, help="Delete the user preferences file if it exists."
-)
-def main(
+def create_project(
     name,
     path,
     user_name,
@@ -155,7 +190,6 @@ def main(
     save_prefs,
     min_python_version,
     verbose,
-    delete_prefs,  # add this parameter
 ):
     """
     The main entry point for the script.
@@ -163,19 +197,48 @@ def main(
     if verbose:
         logger.setLevel(logging.DEBUG)
 
+    if path is None:
+        path = click.prompt(
+            "Please enter a project path",
+            default=get_saved_prefs("path", str(Path.home() / "code")),
+        )
+    if user_name is None:
+        user_name = get_saved_prefs("user_name", "Default User")
+    if user_email is None:
+        user_email = get_saved_prefs("user_email", "user@example.com")
+    if command is None:
+        command = get_saved_prefs("command", "cmd")
+    if package_type is None:
+        package_type = get_saved_prefs("package_type", "setuptools")
+    if min_python_version is None:
+        min_python_version = get_saved_prefs("min_python_version", "3.9")
+
     if save_prefs:
         create_prefs_file(path, user_name, user_email, package_type, min_python_version)
 
-    if delete_prefs:
-        delete_prefs_file()
+    try:
+        project_generation.create_project(
+            name,
+            path,
+            user_name,
+            user_email,
+            command,
+            package_type,
+            save_prefs,
+            min_python_version,
+        )
+    except Exception as e:
+        logger.error(f"An error occurred in create_project: {e}")
+        raise
 
-    project_generation.create_project(
-        name,
-        path,
-        user_name,
-        user_email,
-        command,
-        package_type,
-        save_prefs,
-        min_python_version,
-    )
+
+@cli.command()
+def delete_prefs():
+    """
+    Deletes the user_prefs.json file if it exists.
+    """
+    delete_prefs_file()
+
+
+if __name__ == "__main__":
+    cli()

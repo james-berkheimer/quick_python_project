@@ -39,7 +39,7 @@ file = "README.md"
 content-type = "text/markdown"
 
 [project.scripts]
-qpp = "quick_python_project.main:main"
+qpp = "quick_python_project.main:cli"
 
 [project.urls]
 homepage = "https://github.com/james-berkheimer/quick_python_project"
@@ -48,6 +48,7 @@ homepage = "https://github.com/james-berkheimer/quick_python_project"
 include-package-data = true
 platforms = ["any"]
 license-files = ["LICENSE"]
+package-data = {"quick_python_project" = ["templates/*"]}
 
 [tool.setuptools.packages.find]
 exclude = ["tests"]

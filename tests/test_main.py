@@ -1,9 +1,7 @@
-# FILEPATH: /home/james/code/quick_python_project/tests/test_main.py
 import json
 import os
 import stat
 import sys
-import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -14,184 +12,235 @@ from click.testing import CliRunner
 # Add the 'src' directory to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
-from quick_python_project.main import create_prefs_file, delete_prefs_file, get_saved_prefs, main
+from quick_python_project.main import (  # noqa: E402
+    cli,
+    create_prefs_file,
+    create_project,
+    delete_prefs_file,
+    get_prefs_file_path,
+    get_saved_prefs,
+)
 
-# print(f"Location: {os.path.dirname(main.__file__)}")
+CONFIG_FILE_NAME = "config.json"
 
 
-class TestPrefsFiles(unittest.TestCase):
-    @patch("builtins.open", new_callable=mock_open)
-    @patch("pathlib.Path.cwd")
-    def test_create_prefs_file(self, mock_cwd, mock_file):
-        # Setup
-        path = tempfile.mkdtemp()  # Use a temporary directory
-        mock_cwd.return_value = Path(path)  # Mock Path.cwd() to return the temporary directory
+class TestGetPrefsFilePath(unittest.TestCase):
+    @mock.patch("os.getenv")
+    @mock.patch("pathlib.Path.home")
+    def test_get_prefs_file_path_posix(self, mock_home, mock_getenv):
+        # Arrange
+        mock_home.return_value = Path("/home/user")
+        mock_getenv.return_value = "C:\\Users\\user\\AppData\\Roaming"
 
+        # Act & Assert
+        self.assertEqual(
+            str(get_prefs_file_path("posix")), str(Path("/home/user/.config/config.json"))
+        )
+
+    @mock.patch("os.getenv")
+    @mock.patch("pathlib.Path.home")
+    def test_get_prefs_file_path_nt(self, mock_home, mock_getenv):
+        # Arrange
+        mock_home.return_value = Path("/home/user")
+        mock_getenv.return_value = "C:\\Users\\user\\AppData\\Roaming"
+
+        # Act & Assert
+        self.assertEqual(
+            str(get_prefs_file_path("nt")),
+            str(
+                Path("C:\\Users\\user\\AppData\\Roaming")
+                / "quick_python_project"
+                / CONFIG_FILE_NAME
+            ),
+        )
+
+    @mock.patch("os.getenv")
+    @mock.patch("pathlib.Path.home")
+    def test_get_prefs_file_path_unsupported(self, mock_home, mock_getenv):
+        # Arrange
+        mock_home.return_value = Path("/home/user")
+        mock_getenv.return_value = "C:\\Users\\user\\AppData\\Roaming"
+
+        # Act & Assert
+        with self.assertRaises(NotImplementedError):
+            get_prefs_file_path("unsupported")
+
+    @mock.patch("quick_python_project.main.open", new_callable=mock.mock_open)
+    @mock.patch("quick_python_project.main.os.chmod")
+    def test_create_prefs_file_exception(self, mock_chmod, mock_open):
+        # Arrange
+        mock_open.side_effect = Exception("Test exception")
+        project_path = "/path/to/project"
         user_name = "test_user"
         user_email = "test_user@example.com"
         package_type = "test_package"
-        min_python_version = "3.6"
+        min_python_version = "3.7"
 
-        # Call the function under test
-        create_prefs_file(path, user_name, user_email, package_type, min_python_version)
+        # Act and Assert
+        with self.assertRaises(Exception) as context:
+            create_prefs_file(project_path, user_name, user_email, package_type, min_python_version)
+        self.assertTrue("Test exception" in str(context.exception))
 
-        # Assert that the file was opened in write mode
-        mock_file.assert_called_once_with(Path(path) / "data" / "user_prefs.json", "w")
+    @mock.patch("quick_python_project.main.os.path.exists", return_value=True)
+    @mock.patch("quick_python_project.main.os.remove")
+    def test_delete_prefs_file_exists(self, mock_remove, mock_exists):
+        delete_prefs_file()
+        mock_remove.assert_called_once()
 
-        # Get the mock file handle
-        handle = mock_file()
+    @mock.patch("quick_python_project.main.os.path.exists", return_value=False)
+    @mock.patch("quick_python_project.main.os.remove")
+    def test_delete_prefs_file_not_exists(self, mock_remove, mock_exists):
+        delete_prefs_file()
+        mock_remove.assert_not_called()
 
-        # Assert that the file was written with the correct JSON string
-        expected_json = json.dumps(
+    @mock.patch("quick_python_project.main.os.path.exists", return_value=True)
+    @mock.patch("quick_python_project.main.os.remove", side_effect=Exception("Test exception"))
+    def test_delete_prefs_file_exception(self, mock_remove, mock_exists):
+        with self.assertRaises(Exception) as context:
+            delete_prefs_file()
+        self.assertTrue("Test exception" in str(context.exception))
+
+
+class TestPrefs(unittest.TestCase):
+    @mock.patch("quick_python_project.main.Path")
+    @mock.patch("quick_python_project.main.get_prefs_file_path")
+    @mock.patch("quick_python_project.main.json.dumps")
+    @mock.patch("quick_python_project.main.open", new_callable=mock.mock_open)
+    @mock.patch("quick_python_project.main.os.chmod")
+    def test_create_prefs_file(
+        self, mock_chmod, mock_open, mock_json_dumps, mock_get_prefs_file_path, mock_path
+    ):
+        # Arrange
+        mock_get_prefs_file_path.return_value = "/path/to/prefs/file"
+        mock_path.return_value.parent.mkdir.return_value = None
+        mock_json_dumps.return_value = '{"key": "value"}'
+        project_path = "/path/to/project"
+        user_name = "test_user"
+        user_email = "test_user@example.com"
+        package_type = "test_package"
+        min_python_version = "3.7"
+
+        # Act
+        create_prefs_file(project_path, user_name, user_email, package_type, min_python_version)
+
+        # Assert
+        mock_path.assert_called_once_with("/path/to/prefs/file")
+        mock_path.return_value.parent.mkdir.assert_called_once_with(parents=True, exist_ok=True)
+        mock_json_dumps.assert_called_once_with(
             {
-                "path": str(path),
+                "project_path": project_path,
                 "user_name": user_name,
                 "user_email": user_email,
                 "package_type": package_type,
                 "min_python_version": min_python_version,
             }
         )
-        handle.write.assert_called_once_with(expected_json)
-
-    @patch("os.path.exists")
-    @patch("os.remove")
-    @patch("quick_python_project.main.logger")
-    def test_delete_prefs_file(self, mock_logger, mock_remove, mock_exists):
-        # Test when file exists
-        mock_exists.return_value = True
-        delete_prefs_file()
-        mock_remove.assert_called_once_with("user_prefs.json")
-        mock_logger.info.assert_called_with("User preferences file deleted.")
-
-        # Reset mocks
-        mock_remove.reset_mock()
-        mock_logger.reset_mock()
-
-        # Test when file does not exist
-        mock_exists.return_value = False
-        delete_prefs_file()
-        mock_remove.assert_not_called()
-        mock_logger.info.assert_called_with("User preferences file does not exist.")
-
-        # Reset mocks
-        mock_logger.reset_mock()
-
-        # Test when an error occurs
-        mock_exists.side_effect = Exception("Test exception")
-        delete_prefs_file()
-        mock_logger.error.assert_called_with(
-            "An error occurred while deleting the user preferences file: Test exception"
+        mock_open.assert_called_once_with(mock_path.return_value, "w")
+        mock_open.return_value.write.assert_called_once_with('{"key": "value"}')
+        mock_chmod.assert_called_once_with(
+            mock_path.return_value, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
         )
 
-    #########
-
-    @patch.object(Path, "exists")
-    @patch("builtins.open", new_callable=mock_open)
-    @patch("os.access")
-    @patch("pathlib.Path.cwd")
-    @patch("quick_python_project.main.logger")
-    @patch("json.loads")
-    def test_get_saved_prefs(
-        self, mock_json_loads, mock_logger, mock_cwd, mock_access, mock_file, mock_exists
+    @mock.patch("quick_python_project.main.logger")
+    @mock.patch("quick_python_project.main.os.remove")
+    @mock.patch("quick_python_project.main.os.path.exists")
+    @mock.patch("quick_python_project.main.get_prefs_file_path")
+    def test_delete_prefs_file(
+        self, mock_get_prefs_file_path, mock_exists, mock_remove, mock_logger
     ):
-        # Setup
-        path = tempfile.mkdtemp()  # Use a temporary directory
-        mock_cwd.return_value = Path(path)  # Mock Path.cwd() to return the temporary directory
-        prefs_path = Path(path) / "data" / "user_prefs.json"
-
-        # Create a mock for the file object
-        mock_file_obj = MagicMock()
-        mock_file_obj.read.return_value = json.dumps({"key": "value"})
-
-        # Set mock_file to return a mock that has `__enter__` method returning `mock_file_obj`
-        mock_file.return_value.__enter__.return_value = mock_file_obj
-
-        # Mock json.loads to return the dictionary
-        mock_json_loads.return_value = {"key": "value"}
-
-        # Test when the preferences file exists and is readable
-        mock_access.return_value = True
+        # Arrange
+        mock_get_prefs_file_path.return_value = "/path/to/prefs/file"
         mock_exists.return_value = True
 
-        # Call the function under test
-        result = get_saved_prefs("key", "default")
+        # Act
+        delete_prefs_file()
 
-        # Assert that the open function was called with the correct arguments
-        mock_file.assert_called_once_with(prefs_path, "r")
-
-        # Assert that the json.loads function was called with the mock file object
-        mock_json_loads.assert_called_once_with(
-            mock_file_obj.read.return_value,
-            cls=ANY,
-            object_hook=ANY,
-            parse_float=ANY,
-            parse_int=ANY,
-            parse_constant=ANY,
-            object_pairs_hook=ANY,
+        # Assert
+        mock_get_prefs_file_path.assert_called_once()
+        mock_exists.assert_called_once_with("/path/to/prefs/file")
+        mock_remove.assert_called_once_with("/path/to/prefs/file")
+        mock_logger.info.assert_called_once_with(
+            "User preferences file /path/to/prefs/file deleted."
         )
 
-        # Assert that the function returned the correct result
+    @mock.patch("quick_python_project.main.get_prefs_file_path")
+    @mock.patch("builtins.open", new_callable=mock.mock_open, read_data='{"key": "value"}')
+    @mock.patch("quick_python_project.main.logger")
+    def test_get_saved_prefs(self, mock_logger, mock_open, mock_get_prefs_file_path):
+        # Arrange
+        mock_get_prefs_file_path.return_value = MagicMock(
+            spec=Path, exists=MagicMock(return_value=True), is_file=MagicMock(return_value=True)
+        )
+        key = "key"
+        default_argument = "default_value"
+
+        # Act
+        result = get_saved_prefs(key, default_argument)
+
+        # Assert
+        self.assertEqual(result, "value")
+        mock_logger.info.assert_called_once_with(
+            f"Using preferences from {mock_get_prefs_file_path.return_value}"
+        )
+
+    @mock.patch("quick_python_project.main.get_prefs_file_path")
+    @mock.patch("builtins.open", new_callable=mock.mock_open, read_data='{"key": "value"}')
+    def test_get_saved_prefs_exists(self, mock_open, mock_get_prefs_file_path):
+        result = get_saved_prefs("key", "default_value")
         self.assertEqual(result, "value")
 
-        # Test when the preferences file does not exist or is not readable
-        mock_access.return_value = False
-        result = get_saved_prefs("key", "default")
-        self.assertEqual(result, "default")
-        mock_logger.debug.assert_called_with(
-            f"The saved defaults file {prefs_path} is not readable or does not exist.  Using the provided default value."
-        )
+    @mock.patch("quick_python_project.main.get_prefs_file_path")
+    @mock.patch("builtins.open", new_callable=mock.mock_open, read_data='{"key": "value"}')
+    def test_get_saved_prefs_not_exists(self, mock_open, mock_get_prefs_file_path):
+        result = get_saved_prefs("nonexistent_key", "default_value")
+        self.assertEqual(result, "default_value")
+
+    @mock.patch("quick_python_project.main.get_prefs_file_path")
+    @mock.patch("builtins.open", side_effect=FileNotFoundError())
+    def test_get_saved_prefs_file_not_exists(self, mock_open, mock_get_prefs_file_path):
+        result = get_saved_prefs("key", "default_value")
+        self.assertEqual(result, "default_value")
 
 
-class TestMainFunction(unittest.TestCase):
-    @patch("quick_python_project.main.create_prefs_file")
-    @patch("quick_python_project.main.delete_prefs_file")
+class TestCreateProject(unittest.TestCase):
+    def setUp(self):
+        self.runner = CliRunner()
+
     @patch("quick_python_project.main.project_generation.create_project")
-    def test_main(self, mock_create_project, mock_delete_prefs_file, mock_create_prefs_file):
-        runner = CliRunner()
-        result = runner.invoke(
-            main,
+    def test_create_project(self, mock_create_project):
+        # Make the mock return 0 (success)
+        mock_create_project.return_value = 0
+
+        result = self.runner.invoke(
+            cli,
             [
-                "-n",
+                "create-project",
+                "--name",
                 "test_project",
-                "-p",
-                "/test/path",
-                "-un",
+                "--path",
+                "/tmp",
+                "--user-name",
                 "test_user",
-                "-ue",
+                "--user-email",
                 "test_user@example.com",
-                "-cmd",
+                "--command",
                 "test_command",
-                "-pt",
+                "--package-type",
                 "setuptools",
-                "-mpv",
+                "--min-python-version",
                 "3.9",
-                "-sp",
-                "-v",
-                "-dp",
+                "--save-prefs",
+                "--verbose",
             ],
         )
 
-        # Print the output if the command failed
-        if result.exit_code != 0:
-            print(result.output)
-
-        # Check that the command ran without errors
+        # Check that the command did not return an error
         self.assertEqual(result.exit_code, 0)
-
-        # ... rest of the test
-
-        # Check that the create_prefs_file function was called with the correct arguments
-        mock_create_prefs_file.assert_called_once_with(
-            "/test/path", "test_user", "test_user@example.com", "setuptools", "3.9"
-        )
-
-        # Check that the delete_prefs_file function was called
-        mock_delete_prefs_file.assert_called_once()
 
         # Check that the create_project function was called with the correct arguments
         mock_create_project.assert_called_once_with(
             "test_project",
-            "/test/path",
+            "/tmp",
             "test_user",
             "test_user@example.com",
             "test_command",
@@ -199,3 +248,20 @@ class TestMainFunction(unittest.TestCase):
             True,
             "3.9",
         )
+
+    @patch("quick_python_project.main.delete_prefs_file")
+    def test_delete_prefs(self, mock_delete_prefs_file):
+        # Make the mock return None (success)
+        mock_delete_prefs_file.return_value = None
+
+        result = self.runner.invoke(cli, ["delete-prefs"])
+
+        # Check that the command did not return an error
+        self.assertEqual(result.exit_code, 0)
+
+        # Check that the delete_prefs_file function was called
+        mock_delete_prefs_file.assert_called_once()
+
+
+if __name__ == "__main__":
+    unittest.main()

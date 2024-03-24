@@ -138,11 +138,18 @@ def generate_project_files(
     }
 
     files_to_generate = [
-        ("pyproject.toml", f"templates/{package_type}_pyproject.toml"),
-        (".gitignore", "templates/.gitignore"),
-        (".README.md", "templates/README.md"),
-        ("LICENSE", "templates/LICENSE"),
-        (f"src/{project_name}/main.py", "templates/main.py"),
+        (
+            "pyproject.toml",
+            f"src/quick_python_project/templates/template_{package_type}_pyproject.toml",
+        ),
+        (".gitignore", "src/quick_python_project/templates/template_.gitignore"),
+        (".README.md", "src/quick_python_project/templates/template_README.md"),
+        ("LICENSE", "src/quick_python_project/templates/template_LICENSE"),
+        (f"src/{project_name}/main.py", "src/quick_python_project/templates/template_main.py"),
+        (
+            f"src/{project_name}/__init__.py",
+            "src/quick_python_project/templates/template___init__.py",
+        ),
     ]
 
     for file_name, template_name in files_to_generate:
@@ -152,7 +159,9 @@ def generate_project_files(
             else:
                 file_path = Path(project_root_path) / file_name
             file_path.parent.mkdir(parents=True, exist_ok=True)
-            create_file_from_template(file_path, template_name, replacements)
+            create_file_from_template(
+                file_path, template_name.replace("templates_", ""), replacements
+            )
         except (PermissionError, IOError) as e:
             logger.error(f"Error generating file {file_path}: {e}")
             raise

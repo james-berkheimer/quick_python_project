@@ -21,7 +21,7 @@ relied on reaserch and not experience.  Please feel free to propose any improvem
 Here's how you can use Quick Python Project:
 
 ```bash
-qpp --name MyProject --path ./my_project --user-name "Your Name" --user-email "your.email@example.com" --command myproject --package-type setuptools --min-python-version 3.9
+qpp create_project --name MyProject --path ./my_project --user-name "Your Name" --user-email "your.email@example.com" --command myproject --package-type setuptools --min-python-version 3.9```
 ```
 
 Here's what each option does:
@@ -37,11 +37,11 @@ Here's what each option does:
 You can also save your preferences so you don't have to enter them every time:
 
 ```bash
-qpp --save-prefs --name MyProject --path ./my_project --user-name "Your Name" --user-email "your.email@example.com" --command myproject --package-type setuptools --min-python-version 3.9
+qpp create_project --save-prefs --name MyProject --path ./my_project --user-name "Your Name" --user-email "your.email@example.com" --command myproject --package-type setuptools --min-python-version 3.9
 ```
 And you can delete your saved preferences with the --delete-prefs option:
 ```bash
-qpp --delete-prefs
+qpp delete_prefs
 ```
 
 Once your project is created, you can navigate to the project directory and run your project with the command you specified:

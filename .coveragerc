@@ -7,6 +7,7 @@ omit =
     */site-packages/*
     */.tox/*
     tests/*
+    version.py
 
 # Enable parallel mode for coverage collection
 parallel = True
