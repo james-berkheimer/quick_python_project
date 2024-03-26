@@ -39,7 +39,7 @@ file = "README.md"
 content-type = "text/markdown"
 
 [project.scripts]
-qpp = "quick_python_project.main:cli"
+qpp = "quick_python_project.cli:cli"
 
 [project.urls]
 homepage = "https://github.com/james-berkheimer/quick_python_project"

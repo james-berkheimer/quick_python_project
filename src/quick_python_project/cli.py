@@ -121,7 +121,7 @@ def get_saved_prefs(key, default_argument):
                     prefs_file_read = True
                 return defaults.get(key, default_argument)
         else:
-            logger.debug(
+            logger.warning(
                 f"The saved defaults file {prefs_path} is not readable or does not exist.  Using the provided default value."
             )
     except Exception as e:
@@ -129,7 +129,19 @@ def get_saved_prefs(key, default_argument):
     return default_argument
 
 
-@click.group()
+def print_help(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    click.echo(ctx.get_help(), color=ctx.color)
+    ctx.exit()
+
+
+@click.group(
+    context_settings=dict(
+        help_option_names=["-h", "--help"],
+    )
+)
+@click.option("-h", "--help", is_flag=True, callback=print_help, expose_value=False, is_eager=True)
 def cli():
     pass
 
@@ -238,6 +250,66 @@ def delete_prefs():
     Deletes the user_prefs.json file if it exists.
     """
     delete_prefs_file()
+
+
+@cli.command()
+def summary():
+    """Prints a summary of all commands and their options."""
+    click.echo(click.style("Commands:", fg="green"))
+    click.echo(click.style("  create-project", fg="blue"))
+    click.echo("\tOptions:")
+    click.echo(
+        "\t" + click.style("-n, --name <TEXT>", fg="yellow") + "\t\t\t\t\tThe name of the project."
+    )
+    click.echo(
+        "\t"
+        + click.style("-p, --path <TEXT>", fg="yellow")
+        + "\t\t\t\t\tThe path where the project will be created."
+    )
+    click.echo(
+        "\t"
+        + click.style("-un, --user-name <TEXT>", fg="yellow")
+        + "\t\t\t\t\tThe name of the user."
+    )
+    click.echo(
+        "\t"
+        + click.style("-ue, --user-email <TEXT>", fg="yellow")
+        + "\t\t\t\tThe email of the user."
+    )
+    click.echo(
+        "\t"
+        + click.style("-cmd, --command <TEXT>", fg="yellow")
+        + "\t\t\t\t\tThe name of the command."
+    )
+    click.echo(
+        "\t"
+        + click.style("-pt, --package-type [setuptools|hatchling|poetry]", fg="yellow")
+        + "\tThe type of the package."
+    )
+    click.echo(
+        "\t"
+        + click.style("-mpv, --min-python-version [3.9|3.10|3.11]", fg="yellow")
+        + "\t\tThe minimum Python version required for the project."
+    )
+    click.echo(
+        "\t"
+        + click.style("-sp, --save-prefs", fg="yellow")
+        + "\t\t\t\t\tSave the options as defaults:\n"
+        + "\t\t\t\t\t\t\t\t\t[project path, user name, user email, package type, minimum Python version]"
+    )
+    click.echo(
+        "\t"
+        + click.style("-v, --verbose", fg="yellow")
+        + "\t\t\t\t\t\tEnable verbose logging (show debug logs)."
+    )
+    click.echo(
+        "\t" + click.style("-h, --help", fg="yellow") + "\t\t\t\t\t\tShow this message and exit."
+    )
+    click.echo(click.style("  delete-prefs", fg="blue"))
+    click.echo("\tOptions:")
+    click.echo(
+        "\t" + click.style("-h, --help", fg="yellow") + "\t\t\t\t\t\tShow this message and exit."
+    )
 
 
 if __name__ == "__main__":

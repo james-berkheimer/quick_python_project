@@ -137,18 +137,34 @@ def generate_project_files(
         "PYTHON_VERSION": f">={min_python_version}",
     }
 
+    script_dir = os.path.dirname(__file__)
     files_to_generate = [
         (
             "pyproject.toml",
-            f"src/quick_python_project/templates/template_{package_type}_pyproject.toml",
+            os.path.join(
+                script_dir,
+                f"templates/template_{package_type}_pyproject.toml",
+            ),
         ),
-        (".gitignore", "src/quick_python_project/templates/template_.gitignore"),
-        (".README.md", "src/quick_python_project/templates/template_README.md"),
-        ("LICENSE", "src/quick_python_project/templates/template_LICENSE"),
-        (f"src/{project_name}/main.py", "src/quick_python_project/templates/template_main.py"),
+        (
+            ".gitignore",
+            os.path.join(script_dir, "templates/template_.gitignore"),
+        ),
+        (
+            ".README.md",
+            os.path.join(script_dir, "templates/template_README.md"),
+        ),
+        (
+            "LICENSE",
+            os.path.join(script_dir, "templates/template_LICENSE"),
+        ),
+        (
+            f"src/{project_name}/main.py",
+            os.path.join(script_dir, "templates/template_main.py"),
+        ),
         (
             f"src/{project_name}/__init__.py",
-            "src/quick_python_project/templates/template___init__.py",
+            os.path.join(script_dir, "templates/template___init__.py"),
         ),
     ]
 
