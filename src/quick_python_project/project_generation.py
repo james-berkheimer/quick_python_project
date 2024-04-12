@@ -155,10 +155,6 @@ def generate_project_files(
             os.path.join(script_dir, "templates/template_README.md"),
         ),
         (
-            "LICENSE",
-            os.path.join(script_dir, "templates/template_LICENSE"),
-        ),
-        (
             f"src/{project_name}/main.py",
             os.path.join(script_dir, "templates/template_main.py"),
         ),
