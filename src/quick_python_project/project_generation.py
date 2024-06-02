@@ -3,6 +3,8 @@ import json
 import logging
 import os
 import stat
+import subprocess
+import sys
 from pathlib import Path
 
 import colorlog
@@ -53,21 +55,14 @@ def create_file_from_template(path, template_path, replacements):
         raise
 
 
-def create_project(
-    name, path, user_name, user_email, command_name, package_type, save_prefs, min_python_version
-):
+def create_project(name, path, command_name):
     """
     Create a new project with the specified name at the specified path.
 
     Parameters:
     name (str): The name of the project.
     path (str): The path where the project will be created.
-    user_name (str): The name of the user.
-    user_email (str): The email of the user.
     command_name (str): The name of the command.
-    package_type (str): The type of the package.
-    save_prefs (bool): Whether to save the current options as defaults.
-    min_python_version (str): The minimum Python version required for the project.
     """
     logger.info("Creating project...")
     path = Path(path)
@@ -81,60 +76,37 @@ def create_project(
         project_root_path.mkdir(parents=True, exist_ok=True)
 
         try:
-            generate_project_files(
-                name,
-                project_root_path,
-                user_name,
-                user_email,
-                command_name,
-                package_type,
-                min_python_version,
-            )
+            generate_project_files(name, project_root_path, command_name)
         except (PermissionError, IOError) as e:
             logger.error(f"Error: {e}")
             raise
 
         logger.info(f"Created '{name}' project at '{project_root_path}'")
-        logger.info(f"User: '{user_name}' with email '{user_email}'")
         logger.info(f"Command: '{command_name}'")
-        logger.info(f"Package type: '{package_type}'")
-        logger.info(f"Minimum Python version: '{min_python_version}'")
 
 
-def generate_project_files(
-    project_name,
-    project_root_path,
-    user_name,
-    user_email,
-    command_name,
-    package_type,
-    min_python_version,
-):
+def generate_project_files(project_name, project_root_path, command_name):
     """
-    Generate the files for the new project based on templates.
+    Generate the files for the new project based on templates and setup virtual environment.
 
     Parameters:
     project_name (str): The name of the project.
     project_root_path (str): The path where the project will be created.
-    user_name (str): The name of the user.
-    user_email (str): The email of the user.
     command_name (str): The name of the command.
-    package_type (str): The type of the package.
-    min_python_version (str): The minimum Python version required for the project.
 
     Raises:
     PermissionError: If the script does not have write access to the project root path.
     """
-    if not os.access(project_root_path, os.W_OK):
+    project_root_path = Path(project_root_path)
+    if not os.access(str(project_root_path), os.W_OK):
         raise PermissionError(f"Cannot write to project root path {project_root_path}")
 
     logger.info("Generating project files...")
+
     replacements = {
         "PLACEHOLDER_NAME": project_name,
-        "<USERNAME>": user_name,
-        "<USERNAME@example>": user_email,
         "PLACEHOLDER_CMD": command_name,
-        "PYTHON_VERSION": f">={min_python_version}",
+        "PYTHON_VERSION": f'"{sys.version_info.major}.{sys.version_info.minor}"',
     }
 
     script_dir = os.path.dirname(__file__)
@@ -143,7 +115,7 @@ def generate_project_files(
             "pyproject.toml",
             os.path.join(
                 script_dir,
-                f"templates/template_{package_type}_pyproject.toml",
+                "templates/template_pyproject.toml",
             ),
         ),
         (
@@ -151,7 +123,7 @@ def generate_project_files(
             os.path.join(script_dir, "templates/template_.gitignore"),
         ),
         (
-            ".README.md",
+            "README.md",
             os.path.join(script_dir, "templates/template_README.md"),
         ),
         (
@@ -165,15 +137,15 @@ def generate_project_files(
     ]
 
     for file_name, template_name in files_to_generate:
+        print(f"Generating file: {file_name}")
+        print(f"Template: {template_name}")
         try:
-            if file_name.endswith("_pyproject.toml"):
-                file_path = Path(project_root_path) / "pyproject.toml"
+            if file_name.endswith("pyproject.toml"):
+                file_path = project_root_path / "pyproject.toml"
             else:
-                file_path = Path(project_root_path) / file_name
+                file_path = project_root_path / file_name
             file_path.parent.mkdir(parents=True, exist_ok=True)
-            create_file_from_template(
-                file_path, template_name.replace("templates_", ""), replacements
-            )
+            create_file_from_template(file_path, template_name, replacements)
         except (PermissionError, IOError) as e:
             logger.error(f"Error generating file {file_path}: {e}")
             raise

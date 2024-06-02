@@ -2,59 +2,69 @@
 
 ## Description
 
-This project is initially meant to be a learning process for how to build and deploy
-a python project on PyPI.  I chose a project I have used to personally to creating
-quick python projects that can be installed with pips editable install and run
-by a command in a terminal in order to quickly test code.  I figured this might be usefull for others and I have done my best attempts to make
-it more user friendly.  I will work on improving this as time allows with more features.
-
-By default the projects use setuptools and a pyproject.toml.  But I have provided
-defaults for Hatchling and Poetry.  Since I use neither of these, my defaults have
-relied on reaserch and not experience.  Please feel free to propose any improvements.
+Quick Python Project is a tool designed to streamline the creation and deployment of Python projects on PyPI. Originally conceived as a personal learning project, it aims to simplify the process of creating Python projects that can be quickly tested and run from the command line. The tool facilitates the creation of projects that utilize setuptools and a pyproject.toml file by default. Your feedback and suggestions for improvement are highly appreciated as I continue to enhance its functionality.
 
 ## Installation
 
-`pip install quick_python_project`
+```bash
+pip install quick_python_project
+```
 
 ## Usage
 
-Here's how you can use Quick Python Project:
+To create a new project using Quick Python Project, use the following command:
 
 ```bash
-qpp create_project --name MyProject --path ./my_project --user-name "Your Name" --user-email "your.email@example.com" --command myproject --package-type setuptools --min-python-version 3.9```
+qpp create_project <project_name> <command_name>
 ```
 
-Here's what each option does:
+Replace `<project_name>` with the desired name of your project and `<command_name>` with the command that will be used to run your project.
 
-- `--name`: The name of your project.
-- `--path`: The directory where your project will be created.
-- `--user-name`: Your name, which will be used in the project metadata.
-- `--user-email`: Your email, which will be used in the project metadata.
-- `--command`: The command that will be used to run your project.
-- `--package-type`: The type of Python package to create. Can be `setuptools`, `hatchling`, or `poetry`.
-- `--min-python-version`: The minimum Python version required for your project. Can be `3.9`, `3.10`, or `3.11`.
-
-You can also save your preferences so you don't have to enter them every time:
+### Example:
 
 ```bash
-qpp create_project --save-prefs --name MyProject --path ./my_project --user-name "Your Name" --user-email "your.email@example.com" --command myproject --package-type setuptools --min-python-version 3.9
-```
-And you can delete your saved preferences with the --delete-prefs option:
-```bash
-qpp delete_prefs
+qpp create_project my_project my_command
 ```
 
-Once your project is created, you can navigate to the project directory and run your project with the command you specified:
+Once your project is created, you can navigate to its directory and run the specified command to execute it.
+
+## Command Line Arguments
+
+- `project_name`: The name of the new project.
+- `command_name` (optional, default: 'cmd'): The name of the command to launch the program.
+
+### Example:
 
 ```bash
-cd my_project
-# Install prefered virtual environment
+qpp create_project my_project my_command
+```
+
+## Note
+
+After creating your project, navigate to the project directory and follow these steps:
+
+1. Set up a virtual environment:
+```bash
 python3 -m venv .venv
-# Activate the virtual environment
-source ./.venv/bin/activate
-# Perform editable install of project
-pip install -e .
-# Run command
-myproject
-#This will print "Hello, world!" to the console.
 ```
+
+2. Activate the virtual environment:
+```bash
+source .venv/bin/activate
+```
+
+3. Perform an editable install of the project:
+```bash
+pip install -e .
+```
+
+4. Run the specified command:
+```bash
+my_command
+```
+
+This will execute your project, displaying any output to the console.
+
+## Contributions
+
+Contributions and feedback are welcome! If you have any suggestions or encounter any issues, please feel free to open an issue or submit a pull request on [GitHub](https://github.com/james-berkheimer/quick_python_project).
