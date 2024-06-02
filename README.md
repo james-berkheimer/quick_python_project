@@ -15,15 +15,15 @@ pip install quick_python_project
 To create a new project using Quick Python Project, use the following command:
 
 ```bash
-qpp create_project <project_name> <command_name>
+qpp create_project <project_name> <command_name> <project_path>
 ```
 
-Replace `<project_name>` with the desired name of your project and `<command_name>` with the command that will be used to run your project.
+Replace `<project_name>` with the desired name of your project, `<command_name>` with the command that will be used to run your project, and optionally the path to the new project.  The default path will be /home/code
 
 ### Example:
 
 ```bash
-qpp create_project my_project my_command
+qpp create_project my_project my_command /path/to/project
 ```
 
 Once your project is created, you can navigate to its directory and run the specified command to execute it.
@@ -32,11 +32,12 @@ Once your project is created, you can navigate to its directory and run the spec
 
 - `project_name`: The name of the new project.
 - `command_name` (optional, default: 'cmd'): The name of the command to launch the program.
+- `project_path` (optional, default: 'home/code'): The path to create the new project in.
 
 ### Example:
 
 ```bash
-qpp create_project my_project my_command
+qpp create_project my_project my_command my_path
 ```
 
 ## Note
