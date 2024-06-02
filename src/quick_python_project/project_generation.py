@@ -1,9 +1,5 @@
-import errno
-import json
 import logging
 import os
-import stat
-import subprocess
 import sys
 from pathlib import Path
 
@@ -55,18 +51,18 @@ def create_file_from_template(path, template_path, replacements):
         raise
 
 
-def create_project(name, path, command_name):
+def create_project(project_name, command_name, project_path):
     """
     Create a new project with the specified name at the specified path.
 
     Parameters:
-    name (str): The name of the project.
-    path (str): The path where the project will be created.
+    project_name (str): The name of the project.
     command_name (str): The name of the command.
+    project_path (str): The path where the project will be created.
     """
     logger.info("Creating project...")
-    path = Path(path)
-    project_root_path = path / name
+    path = Path(project_path)
+    project_root_path = path / project_name
 
     if project_root_path.exists():
         logger.error(
@@ -76,12 +72,12 @@ def create_project(name, path, command_name):
         project_root_path.mkdir(parents=True, exist_ok=True)
 
         try:
-            generate_project_files(name, project_root_path, command_name)
+            generate_project_files(project_name, project_root_path, command_name)
         except (PermissionError, IOError) as e:
             logger.error(f"Error: {e}")
             raise
 
-        logger.info(f"Created '{name}' project at '{project_root_path}'")
+        logger.info(f"Created '{project_name}' project at '{project_root_path}'")
         logger.info(f"Command: '{command_name}'")
 
 

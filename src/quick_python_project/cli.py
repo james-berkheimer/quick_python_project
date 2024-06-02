@@ -15,17 +15,20 @@ from . import project_generation
 
         command_name: The name of the command to launch the program. Default is 'cmd'.
 
+        project_path: The path where the project will be created. Default is the user's home directory.
+
     Example:
-    cli.py my_project my_command -d "requests" "numpy"
+    cli.py my_project my_command /path/to/project
     """
 )
 @click.argument("project_name")
 @click.argument("command_name", default="cmd")
-def cli(project_name, command_name):
+@click.argument("project_path", default=str(Path.home() / "code"))
+def cli(project_name, command_name, project_path):
     """
     The main entry point for the script.
     """
-    project_generation.create_project(project_name, str(Path.home() / "code"), command_name)
+    project_generation.create_project(project_name, command_name, project_path)
 
 
 if __name__ == "__main__":
