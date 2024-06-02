@@ -131,3 +131,6 @@ dmypy.json
 # project specific files
 default_values.json
 version.py
+
+# Even Better TOML
+.taplo.toml

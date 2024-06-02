@@ -1,20 +1,17 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools", "wheel", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
 
-[tool.hatchling]
+[tool.setuptools_scm]
 write_to = "src/PLACEHOLDER_NAME/version.py"
 version_scheme = "release-branch-semver"
-include-package-data = true
-platforms = ["any"]
-license-files = ["LICENSE"]
 
 [project]
 name = "PLACEHOLDER_NAME"
 description = "A CLI tool to create empty Python projects"
 authors = [{name = "<USERNAME>", email = "<USERNAME@example>"}]
 license = {text = "MIT"}
-dynamic = ["version"]
+version = "0.1.0"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -36,7 +33,12 @@ PLACEHOLDER_CMD = "PLACEHOLDER_NAME.main:main"
 [project.urls]
 homepage = "https://example.com"
 
-[tool.hatchling.packages.find]
+[tool.setuptools]
+include-package-data = true
+platforms = ["any"]
+license-files = ["LICENSE"]
+
+[tool.setuptools.packages.find]
 exclude = ["tests"]
 namespaces = true
 where = ["src"]
