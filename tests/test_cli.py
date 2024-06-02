@@ -1,8 +1,13 @@
-from pathlib import Path  # Import Path from pathlib
-from unittest.mock import MagicMock, patch
+import os
+import sys
+from pathlib import Path
+from unittest.mock import patch
 
-import click
 from click.testing import CliRunner
+
+# Add the 'src' directory to the Python path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
+
 from quick_python_project import cli
 
 
