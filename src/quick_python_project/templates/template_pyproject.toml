@@ -3,8 +3,8 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "flask_tree_test"
-description = "A CLI tool to create empty Python projects"
+name = "PLACEHOLDER_NAME"
+description = "PLACEHOLDER_DESCRIPTION"
 authors = [{name = "USERNAME", email = "USERNAME@example.com"}]
 license = {text = "MIT"}
 version = "0.1.0"
